@@ -9,28 +9,40 @@
     }"
   >
     {{ mediaState }}
-    <span v-if="mediaState == 'inactive'">● 闲置中</span>
+    <span v-if="mediaState == 'inactive'">● 闲置</span>
     <span v-if="mediaState == 'recording'">● 录制中</span>
     <span v-if="mediaState == 'paused'">● 已暂停</span>
-    <el-button id="shootBtn">截图</el-button>
-    <el-button @click="recorder" :disabled="mediaState !== 'inactive'">
+    <!-- <el-button id="shootBtn">截图</el-button> -->
+    <!-- <el-button @click="recorder" :disabled="mediaState !== 'inactive'">
       录制影像
-    </el-button>
+    </el-button> -->
+    <el-dropdown @command="recorder" :disabled="mediaState !== 'inactive'">
+      <el-button type="primary" :disabled="mediaState !== 'inactive'">
+        录制影像<el-icon class="el-icon--right"><arrow-down /></el-icon>
+      </el-button>
+      <template #dropdown>
+        <el-dropdown-menu>
+          <el-dropdown-item command="video/webm;codecs=vp9"
+            >vp9</el-dropdown-item
+          >
+          <el-dropdown-item command="video/webm;codecs=h264"
+            >h264</el-dropdown-item
+          >
+        </el-dropdown-menu>
+      </template>
+    </el-dropdown>
     <el-button @click="recorderCut" :disabled="mediaState != 'recording'">
-      分片录制
+      分片
     </el-button>
     <el-button :disabled="mediaState != 'recording'" @click="recorderStop">
       停止录制
     </el-button>
-    <el-select
-      v-model="deviceSelect"
-      placeholder="Select"
-    >
+    <el-select v-model="deviceSelect" placeholder="Select" @change="shoot">
       <el-option
         v-for="item in devicesList"
-        :key="item.deviceId"
+        :key="item.id"
         :label="item.label"
-        :value="item.deviceId"
+        :value="item.id"
       />
     </el-select>
   </div>
@@ -41,6 +53,7 @@
 
 <script setup>
 import Camera from './camera.js';
+import { ArrowDown } from '@element-plus/icons-vue';
 import { onMounted, ref, reactive } from 'vue';
 const camera = ref(null);
 onMounted(() => {
@@ -54,15 +67,21 @@ onMounted(() => {
     }
   });
   console.log(camera);
-  getDevices().then((device) => (devicesList.value = device));
+  getDevices().then((device) => {
+    console.log(device);
+    devicesList.value = device;
+    if (device.length > 0) {
+      deviceSelect.value = device[0].id;
+    }
+  });
 });
 //影像录制相关
 let mediaRecorder = reactive(null);
 let mediaState = ref('inactive');
 
-const recorder = async () => {
-  mediaRecorder = await camera.value.play();
-  console.log(mediaRecorder);
+const recorder = async (mimeType) => {
+  mediaRecorder = await camera.value.play(mimeType);
+  console.log(mimeType);
   if (mediaRecorder.state === 'inactive') {
     mediaRecorder.start();
   }
@@ -80,11 +99,14 @@ const recorderStop = () => {
 };
 //下拉框影像列表
 let devicesList = ref('');
+const deviceSelect = ref('');
 const getDevices = async () => {
   let devices = await camera.value.enumDevices();
-  return devices.filter((item) => item.kind == 'videoinput');
+  return devices;
 };
-const deviceSelect = ref('');
+const shoot = (cameraDeviceId) => {
+  camera.value.shoot({ deviceId: cameraDeviceId });
+};
 
 const imgList = ref(null);
 </script>

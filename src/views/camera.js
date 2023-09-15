@@ -48,29 +48,47 @@ class Camera {
 
   // 检查摄像头是否可用
   canCameraUse() {
-    return navigator.getUserMedia && window.URL
+    return navigator.mediaDevices.getUserMedia && window.URL //chrome 60以上
   }
   // 获取录像流到video中
-  shoot() {
+  shoot(option = true) {
     let self = this
     let video = self.video
     console.log(video)
     if (self.canCameraUse) {
-      navigator.getUserMedia(
-        { video: true },
-        (stream) => {
+      navigator.mediaDevices
+        .getUserMedia({ video: option })
+        .then((stream) => {
           this.isPlay = true
           video.srcObject = stream //chrome 108以上
-        },
-        function (error) {
+        })
+        .catch((error) => {
           self.onError && self.onError(error)
-        },
-      )
+        })
     }
   }
   //检测环境摄像头
   enumDevices() {
-    return navigator.mediaDevices.enumerateDevices()
+    return new Promise((resolve, reject) => {
+      navigator.mediaDevices
+        .enumerateDevices()
+        .then(function (devices) {
+          console.log(devices)
+          let videoArr = devices
+            .filter((device) => device?.kind == 'videoinput')
+            .map((device) => {
+              return {
+                label: device.label,
+                id: device.deviceId,
+              }
+            })
+          resolve(videoArr)
+        })
+        .catch(function (err) {
+          layer.msg(err.name + ': ' + err.message)
+          reject()
+        })
+    })
   }
   // 将录像绘制到canvas
   drawVideo() {
@@ -112,12 +130,13 @@ class Camera {
   }
 
   // 开始
-  play() {
+  play(mimeType = 'video/webm;codecs=vp9') {
     return new Promise((resolve, reject) => {
       if (!this.isPlay) reject(new DOMException('影像获取异常！'))
       this.mediaRecorder = new MediaRecorder(this.video.srcObject, {
+        mimeType,
         // mimeType: 'video/webm;codecs=vp9',
-        mimeType: 'video/webm;codecs=h264',
+        // mimeType: 'video/webm;codecs=h264',
       })
       this.mediaRecorder.ondataavailable = function (e) {
         console.log(e)
