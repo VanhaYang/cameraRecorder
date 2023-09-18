@@ -1,11 +1,12 @@
-<script setup>
-import { RouterLink, RouterView } from 'vue-router';
-import HelloWorld from './components/HelloWorld.vue';
-</script>
-
-<template >
-  <!-- <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
+<!-- <template >
+  <header>
+    <img
+      alt="Vue logo"
+      class="logo"
+      src="@/assets/logo.svg"
+      width="125"
+      height="125"
+    />
 
     <div class="wrapper">
       <HelloWorld msg="You did it!" />
@@ -15,11 +16,48 @@ import HelloWorld from './components/HelloWorld.vue';
         <RouterLink to="/about">About</RouterLink>
       </nav>
     </div>
-  </header> -->
-
-  <RouterView />
+  </header>
+</template> -->
+<template>
+  <div class="common-layout">
+    <RouterView />
+  </div>
 </template>
+<script setup>
+import { RouterView } from 'vue-router';
 
+// import { ref, onMounted } from 'vue';
+
+// import sideBox from './views/aside-box.vue';
+// let cameraList = ref([]);
+
+// onMounted(() => {
+// enumDevices().then((device) => {
+//   cameraList = device;
+// });
+// });
+// const enumDevices = () => {
+//   return new Promise((resolve, reject) => {
+//     navigator.mediaDevices
+//       .enumerateDevices()
+//       .then(function (devices) {
+//         let videoArr = devices
+//           .filter((device) => device?.kind == 'videoinput')
+//           .map((device) => {
+//             return {
+//               label: device.label,
+//               id: device.deviceId
+//             };
+//           });
+//         resolve(videoArr);
+//       })
+//       .catch(function (err) {
+//         layer.msg(err.name + ': ' + err.message);
+//         reject();
+//       });
+//   });
+// };
+</script>
 <style scoped>
 header {
   line-height: 1.5;
